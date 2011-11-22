@@ -30,11 +30,6 @@ class Vz_pdf {
 	public function __construct()
 	{
 		$this->EE =& get_instance();
-    }
-    
-    public function render()
-    {
-		$this->EE =& get_instance();
 		
 		// Get tag parameters
 		$html = $this->EE->TMPL->tagdata;
@@ -42,7 +37,7 @@ class Vz_pdf {
 		$cache_path = $this->EE->TMPL->fetch_param('cache_path');
 		$cache_time = $this->EE->TMPL->fetch_param('refresh', 60);
 		$save_only = $this->EE->TMPL->fetch_param('display') == 'off';
-		$attachment = $this->EE->TMPL->fetch_param('save_file') == 'yes';
+		$attachment = $this->EE->TMPL->fetch_param('in_browser') != 'yes';
 		
 		if (empty($filename) || empty($html)) return;
 		
@@ -52,10 +47,11 @@ class Vz_pdf {
 		// Send the PDF to the browser
 		if (!$save_only)
 		{
-		  $this->_stream_pdf($pdf, $filename);
+		  $this->_stream_pdf($pdf, $filename, $attachment);
 		}
 		
-		$this->return_data = '';
+		// Kill Expression Engine before it screws this up for us
+		die();
 	}
 	
 	private function _render_pdf($html)
@@ -71,18 +67,26 @@ class Vz_pdf {
         $dompdf->load_html($html);
         $dompdf->render();
         return $dompdf->output();
-	}
-	
-	private function _stream_pdf($pdf, $filename)
-	{
-    	header("Pragma: public");
+    }
+    
+    private function _stream_pdf($pdf, $filename, $attachment)
+    {
+        // Send the PDF headers
+        header("Pragma: public");
         header("Expires: 0");
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("Cache-Control: public"); 
-        header("Content-Description: File Transfer"); 
-        header("Content-Type: application/pdf"); 
-        header("Content-Disposition: attachment; filename=$filename");
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Type: application/pdf");
         header("Content-Transfer-Encoding: binary");
+        if ($attachment)
+        {
+            header("Content-Disposition: attachment; filename=$filename");
+        } else {
+            header("Content-Disposition: inline; filename=$filename");
+        }
+        
+        // And send the PDF itself
         echo $pdf;
     }
 	
