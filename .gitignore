@@ -1,1 +1,2 @@
-dompdf/lib/fonts/*
+dompdf/lib/fonts/*.afm.php
+dompdf/lib/fonts/log.htm
