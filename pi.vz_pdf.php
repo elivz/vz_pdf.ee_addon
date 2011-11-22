@@ -21,49 +21,63 @@ $plugin_info = array(
 
 
 class Vz_pdf {
-
-	public $return_data;
     
-	/**
-	 * Constructor
-	 */
-	public function __construct()
-	{
-		$this->EE =& get_instance();
-		
-		// Get tag parameters
-		$html = $this->EE->TMPL->tagdata;
-		$filename = $this->EE->TMPL->fetch_param('filename');
-		$cache_path = $this->EE->TMPL->fetch_param('cache_path');
-		$cache_time = $this->EE->TMPL->fetch_param('refresh', 60);
-		$save_only = $this->EE->TMPL->fetch_param('display') == 'off';
-		$output = $this->EE->TMPL->fetch_param('in_browser') == 'yes' ? 'inline' : 'attachment';
-		
-		if (empty($filename) || empty($html)) return;
-		
-		// Get the PDF data
-		$pdf = $this->_render_pdf($html);
-		
-		// Send the PDF to the browser
-		if (!$save_only)
-		{
-		  $this->_stream_pdf($pdf, $filename, $output);
-		}
-		
-		// Kill EE before it screws up the good thing we have going
-		die();
-	}
+    public $return_data;
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->EE =& get_instance();
+        
+        // Get tag parameters
+        $html = $this->EE->TMPL->tagdata;
+        $filename = $this->EE->TMPL->fetch_param('filename');
+        $save_only = $this->EE->TMPL->fetch_param('display') == 'off';
+        $output = $this->EE->TMPL->fetch_param('in_browser') == 'yes' ? 'inline' : 'attachment';
+        
+        if (empty($filename) || empty($html)) return;
+        
+        // See if we have a cached copy already
+        $cache_folder = APPPATH.'cache/vz_pdf/';
+        $cache_file = $cache_folder.md5($html);
+        if (file_exists($cache_file))
+        {
+            // Use the cached PDF
+            $pdf = file_get_contents($cache_file);
+        } else {
+            // Generate a new PDF
+            $pdf = $this->_render_pdf($html);
+            
+            // Cache it for next time
+            if (!file_exists($cache_folder))
+            {
+                mkdir($cache_folder);
+            }
+            file_put_contents($cache_file, $pdf);
+        }
+        
+        // Send the PDF to the browser
+        if (!$save_only)
+        {
+            $this->_stream_pdf($pdf, $filename, $output);
+        }
+        
+        // Kill EE before it screws up the good thing we have going
+        die();
+    }
 	
-	private function _render_pdf($html)
-	{
+    private function _render_pdf($html)
+    {
         // Get parameters
-		$paper_size = $this->EE->TMPL->fetch_param('size', 'letter');
-		$orientation = $this->EE->TMPL->fetch_param('orientation', 'portrait');
-	
+    	$paper_size = $this->EE->TMPL->fetch_param('size', 'letter');
+    	$orientation = $this->EE->TMPL->fetch_param('orientation', 'portrait');
+    
         // Create the PDF
-		require_once("dompdf/dompdf_config.inc.php");
-		$dompdf = new DOMPDF();
-		$dompdf->set_paper($paper_size, $orientation);
+    	require_once("dompdf/dompdf_config.inc.php");
+    	$dompdf = new DOMPDF();
+    	$dompdf->set_paper($paper_size, $orientation);
         $dompdf->load_html($html);
         $dompdf->render();
         return $dompdf->output();
@@ -84,15 +98,15 @@ class Vz_pdf {
         // And send the PDF itself
         echo $pdf;
     }
-	
-	// ----------------------------------------------------------------
-	
-	/**
-	 * Plugin Usage
-	 */
-	public static function usage()
-	{
-		ob_start();
+    
+    // ----------------------------------------------------------------
+    
+    /**
+     * Plugin Usage
+     */
+    public static function usage()
+    {
+    	ob_start();
 ?>
 
 Renders HTML as a PDF using the dompdf library. Will optionally cache the PDF file on the server.
