@@ -37,7 +37,7 @@ class Vz_pdf {
 		$cache_path = $this->EE->TMPL->fetch_param('cache_path');
 		$cache_time = $this->EE->TMPL->fetch_param('refresh', 60);
 		$save_only = $this->EE->TMPL->fetch_param('display') == 'off';
-		$attachment = $this->EE->TMPL->fetch_param('in_browser') != 'yes';
+		$output = $this->EE->TMPL->fetch_param('in_browser') == 'yes' ? 'inline' : 'attachment';
 		
 		if (empty($filename) || empty($html)) return;
 		
@@ -47,17 +47,17 @@ class Vz_pdf {
 		// Send the PDF to the browser
 		if (!$save_only)
 		{
-		  $this->_stream_pdf($pdf, $filename, $attachment);
+		  $this->_stream_pdf($pdf, $filename, $output);
 		}
 		
-		// Kill Expression Engine before it screws this up for us
+		// Kill EE before it screws up the good thing we have going
 		die();
 	}
 	
 	private function _render_pdf($html)
 	{
         // Get parameters
-		$paper_size = $this->EE->TMPL->fetch_param('paper_size', 'letter');
+		$paper_size = $this->EE->TMPL->fetch_param('size', 'letter');
 		$orientation = $this->EE->TMPL->fetch_param('orientation', 'portrait');
 	
         // Create the PDF
@@ -69,7 +69,7 @@ class Vz_pdf {
         return $dompdf->output();
     }
     
-    private function _stream_pdf($pdf, $filename, $attachment)
+    private function _stream_pdf($pdf, $filename, $output)
     {
         // Send the PDF headers
         header("Pragma: public");
@@ -79,12 +79,7 @@ class Vz_pdf {
         header("Content-Description: File Transfer");
         header("Content-Type: application/pdf");
         header("Content-Transfer-Encoding: binary");
-        if ($attachment)
-        {
-            header("Content-Disposition: attachment; filename=$filename");
-        } else {
-            header("Content-Disposition: inline; filename=$filename");
-        }
+        header("Content-Disposition: $output; filename=$filename");
         
         // And send the PDF itself
         echo $pdf;
