@@ -31,18 +31,24 @@ class Vz_pdf {
     {
         $this->EE =& get_instance();
         
+        if ($this->EE->TMPL->fetch_param('disable', false) == 'yes') {
+            $this->return_data = $this->EE->TMPL->tagdata;
+            return;
+        }
+        
         // Get tag parameters
         $html = $this->EE->TMPL->tagdata;
         $filename = $this->EE->TMPL->fetch_param('filename');
+        $caching = $this->EE->TMPL->fetch_param('cache', 'on');
         $save_only = $this->EE->TMPL->fetch_param('display') == 'off';
         $output = $this->EE->TMPL->fetch_param('in_browser') == 'yes' ? 'inline' : 'attachment';
-        
+
         if (empty($filename) || empty($html)) return;
         
         // See if we have a cached copy already
         $cache_folder = APPPATH.'cache/vz_pdf/';
         $cache_file = $cache_folder.md5($html);
-        if (file_exists($cache_file))
+        if ($caching != 'no' && file_exists($cache_file))
         {
             // Use the cached PDF
             $pdf = file_get_contents($cache_file);
@@ -50,12 +56,15 @@ class Vz_pdf {
             // Generate a new PDF
             $pdf = $this->_render_pdf($html);
             
-            // Cache it for next time
-            if (!file_exists($cache_folder))
+            // & cache the sucker
+            if ($caching != 'no')
             {
-                mkdir($cache_folder);
+                if (!file_exists($cache_folder))
+                {
+                    mkdir($cache_folder);
+                }
+                file_put_contents($cache_file, $pdf);
             }
-            file_put_contents($cache_file, $pdf);
         }
         
         // Send the PDF to the browser
@@ -79,6 +88,7 @@ class Vz_pdf {
     	$dompdf = new DOMPDF();
     	$dompdf->set_paper($paper_size, $orientation);
         $dompdf->load_html($html);
+        $dompdf->set_base_path("/srv/www/eli/skramfurniture.com/public/");
         $dompdf->render();
         return $dompdf->output();
     }
