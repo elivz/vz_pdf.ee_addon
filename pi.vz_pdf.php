@@ -11,12 +11,12 @@
  */
 
 $plugin_info = array(
-	'pi_name'		=> 'VZ PDF',
-	'pi_version'	=> '0.5.0',
-	'pi_author'		=> 'Eli Van Zoeren',
-	'pi_author_url'	=> 'http://elivz.com',
-	'pi_description'=> 'Generates PDF files using EE templates',
-	'pi_usage'		=> Vz_pdf::usage()
+    'pi_name'        => 'VZ PDF',
+    'pi_version'     => '0.5.0',
+    'pi_author'      => 'Eli Van Zoeren',
+    'pi_author_url'  => 'http://elivz.com',
+    'pi_description' => 'Generates PDF files using EE templates',
+    'pi_usage'       => Vz_pdf::usage()
 );
 
 
@@ -41,7 +41,7 @@ class Vz_pdf {
         $filename = $this->EE->TMPL->fetch_param('filename');
         $caching = $this->EE->TMPL->fetch_param('cache', 'on');
         $save_only = $this->EE->TMPL->fetch_param('display') == 'off';
-        $output = $this->EE->TMPL->fetch_param('in_browser') == 'yes' ? 'inline' : 'attachment';
+        $output = ($this->EE->TMPL->fetch_param('in_browser') == 'on' || $this->EE->TMPL->fetch_param('in_browser') == 'yes') ? 'inline' : 'attachment';
 
         if (empty($filename) || empty($html)) return;
         
