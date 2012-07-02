@@ -1,6 +1,8 @@
 VZ PDF
 ======
 
+A wrapper for the [dompdf](http://code.google.com/p/dompdf/) library. I wrote this plugin for my own use and you should consider it alpha software. It worked great for me, but I can't promise the same for you. Please report any problems using the "Issues" tab above.
+
 Usage
 -----
 
@@ -8,7 +10,7 @@ Usage
         Content here....
     {/exp:vz_pdf}
 
-Please read the [http://code.google.com/p/dompdf/wiki/CSSCompatibility](dompdf documentation) on CSS compatibility. Most CSS is supported, however there are caveats and certain things don't work exactly the way you would expect.
+Please read the [http://code.google.com/p/dompdf/wiki/CSSCompatibility](dompdf documentation) on CSS compatibility. Most CSS is supported, however there are caveats and certain things don't work exactly the way you would expect. In particular, support for floats is very experimental and is disabled by default. Uncomment the `DOMPDF_ENABLE_CSS_FLOAT` flag in `dompdf/dompdf_config.custom.inc.php` to turn it on.
 
 Parameters
 ----------
@@ -32,6 +34,14 @@ If this is set, the PDF file will be displayed inline in the browser, rather tha
 ### disable="yes"
 
 Disables PDF generation completely and displays the content as a normal ExpressionEngine template. This is very useful for testing your template.
+
+### size="letter"
+
+Set the paper size: `letter`, `legal`, `A4`, etc.
+
+### orientation="portrait"
+
+Set to `landscape` to change the orientation.
 
 Example
 -------

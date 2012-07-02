@@ -12,7 +12,7 @@
 
 $plugin_info = array(
     'pi_name'        => 'VZ PDF',
-    'pi_version'     => '0.5.0',
+    'pi_version'     => '0.5.1',
     'pi_author'      => 'Eli Van Zoeren',
     'pi_author_url'  => 'http://elivz.com',
     'pi_description' => 'Generates PDF files using EE templates',
@@ -21,21 +21,21 @@ $plugin_info = array(
 
 
 class Vz_pdf {
-    
+
     public $return_data;
-    
+
     /**
      * Constructor
      */
     public function __construct()
     {
         $this->EE =& get_instance();
-        
+
         if ($this->EE->TMPL->fetch_param('disable', false) == 'yes') {
             $this->return_data = $this->EE->TMPL->tagdata;
             return;
         }
-        
+
         // Get tag parameters
         $html = $this->EE->TMPL->tagdata;
         $filename = $this->EE->TMPL->fetch_param('filename');
@@ -44,7 +44,7 @@ class Vz_pdf {
         $output = ($this->EE->TMPL->fetch_param('in_browser') == 'on' || $this->EE->TMPL->fetch_param('in_browser') == 'yes') ? 'inline' : 'attachment';
 
         if (empty($filename) || empty($html)) return;
-        
+
         // See if we have a cached copy already
         $cache_folder = APPPATH.'cache/vz_pdf/';
         $cache_file = $cache_folder.md5($html);
@@ -55,7 +55,7 @@ class Vz_pdf {
         } else {
             // Generate a new PDF
             $pdf = $this->_render_pdf($html);
-            
+
             // & cache the sucker
             if ($caching != 'no')
             {
@@ -66,33 +66,33 @@ class Vz_pdf {
                 file_put_contents($cache_file, $pdf);
             }
         }
-        
+
         // Send the PDF to the browser
         if (!$save_only)
         {
             $this->_stream_pdf($pdf, $filename, $output);
         }
-        
+
         // Kill EE before it screws up the good thing we have going
         die();
     }
-	
+
     private function _render_pdf($html)
     {
         // Get parameters
     	$paper_size = $this->EE->TMPL->fetch_param('size', 'letter');
     	$orientation = $this->EE->TMPL->fetch_param('orientation', 'portrait');
-    
+
         // Create the PDF
     	require_once("dompdf/dompdf_config.inc.php");
     	$dompdf = new DOMPDF();
     	$dompdf->set_paper($paper_size, $orientation);
         $dompdf->load_html($html);
-        $dompdf->set_base_path("/srv/www/eli/skramfurniture.com/public/");
+        $dompdf->set_base_path(FCPATH);
         $dompdf->render();
         return $dompdf->output();
     }
-    
+
     private function _stream_pdf($pdf, $filename, $output)
     {
         // Send the PDF headers
@@ -104,13 +104,13 @@ class Vz_pdf {
         header("Content-Type: application/pdf");
         header("Content-Transfer-Encoding: binary");
         header("Content-Disposition: $output; filename=$filename");
-        
+
         // And send the PDF itself
         echo $pdf;
     }
-    
+
     // ----------------------------------------------------------------
-    
+
     /**
      * Plugin Usage
      */
