@@ -12,6 +12,8 @@ Usage
 
 Please read the [http://code.google.com/p/dompdf/wiki/CSSCompatibility](dompdf documentation) on CSS compatibility. Most CSS is supported, however there are caveats and certain things don't work exactly the way you would expect. In particular, support for floats is very experimental and is disabled by default. Uncomment the `DOMPDF_ENABLE_CSS_FLOAT` flag in `dompdf/dompdf_config.custom.inc.php` to turn it on.
 
+I have had much better results using absolute URLs--including the domain name--for images and stylesheets.
+
 Parameters
 ----------
 
@@ -61,7 +63,7 @@ Example
     <head>
         <meta charset="utf-8">
         <title>{title}</title>
-        <link rel="stylesheet" href="/assets/styles/pdfs.css">
+        <link rel="stylesheet" href="http://domain.com/assets/styles/pdfs.css">
     </head>
     <body>
         <h1>{title}</h1>
